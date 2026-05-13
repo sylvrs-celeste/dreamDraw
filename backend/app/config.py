@@ -1,0 +1,78 @@
+"""Application settings.
+
+Everything configurable lives here so nothing else has to touch os.environ.
+The numeric defaults come straight from the spec; the frontend and the image
+pipeline both assume them, so don't change one without checking the other.
+"""
+
+from functools import lru_cache
+from typing import Literal
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # -- environment ----------------------------------------------------
+    env: Literal["dev", "prod"] = "dev"
+    frontend_origin: str = "http://localhost:5173"
+
+    # -- database -------------------------------------------------------
+    database_url: str = "postgresql+asyncpg://dreamdraw:dreamdraw@db:5432/dreamdraw"
+
+    # -- auth -----------------------------------------------------------
+    admin_password_hash: str = ""
+    jwt_secret: str = ""
+    jwt_algorithm: str = "HS256"
+    jwt_ttl_hours: int = 24
+
+    session_cookie_name: str = "dreamdraw_session"
+    # False locally since there's no TLS in front of the dev server.
+    session_cookie_secure: bool = False
+
+    login_rate_limit_attempts: int = 5
+    login_rate_limit_window_minutes: int = 15
+
+    # -- aws ------------------------------------------------------------
+    s3_bucket: str = ""
+    aws_region: str = "us-east-1"
+    # Keep the frontend's query stale time below this or a tab left open
+    # overnight will try to render expired URLs.
+    presign_ttl_seconds: int = 3600
+
+    # -- uploads --------------------------------------------------------
+    max_upload_bytes: int = 25 * 1024 * 1024
+    max_files_per_entry: int = 20
+    allowed_mime_types: tuple[str, ...] = ("image/jpeg", "image/png", "image/webp")
+
+    # -- derivatives ----------------------------------------------------
+    thumb_max_edge: int = 400
+    medium_max_edge: int = 1400
+    webp_quality: int = 82
+
+    # -- pagination -----------------------------------------------------
+    default_page_size: int = 24
+    max_page_size: int = 100
+
+    @property
+    def is_dev(self) -> bool:
+        return self.env == "dev"
+
+    @property
+    def jwt_ttl_seconds(self) -> int:
+        return self.jwt_ttl_hours * 3600
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Cached so the .env file is parsed once per process."""
+    return Settings()
+
+
+settings = get_settings()
