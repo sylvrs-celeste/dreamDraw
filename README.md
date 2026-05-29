@@ -15,7 +15,7 @@ Not yet deployed — the AWS infrastructure is the remaining piece.
 
 ## Stack
 
-React 18 + TypeScript on Vite for the frontend, FastAPI on the backend,
+React 19 + TypeScript on Vite for the frontend, FastAPI on the backend,
 PostgreSQL 16 for metadata, S3 for the images themselves. Everything runs in
 containers, deployed to a single EC2 instance behind an Application Load
 Balancer, with CloudFront in front of that for HTTPS.
@@ -78,7 +78,7 @@ one case where the generated output was silently missing a constraint.
 
 ```
 backend/     FastAPI app, SQLAlchemy models, Alembic migrations
-frontend/    React + TypeScript client            (not started)
+frontend/    React + TypeScript client
 infra/       Dockerfiles, nginx config, compose
 docs/        SRS and working notes                (gitignored)
 ```
