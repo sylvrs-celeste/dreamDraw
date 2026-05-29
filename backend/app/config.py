@@ -8,7 +8,7 @@ pipeline both assume them, so don't change one without checking the other.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -70,6 +70,26 @@ class Settings(BaseSettings):
     # -- pagination -----------------------------------------------------
     default_page_size: int = 24
     max_page_size: int = 100
+
+    @model_validator(mode="after")
+    def _check_password_hash(self) -> "Settings":
+        """Fail at boot on a mangled hash rather than at every login.
+
+        docker compose interpolates $ in env files, and a bcrypt hash is full
+        of them: $2b$12$Tlk... becomes $2b$12. with the rest eaten as an unset
+        variable. The app starts, health checks pass, and every sign-in is
+        rejected for no visible reason. Escape them as $$ in .env.
+        """
+        h = self.admin_password_hash
+        if not h:
+            return self  # unconfigured is allowed; login simply refuses
+        if len(h) != 60 or not h.startswith(("$2a$", "$2b$", "$2y$")):
+            raise ValueError(
+                f"ADMIN_PASSWORD_HASH does not look like bcrypt "
+                f"(got {len(h)} chars, expected 60). If you are running under "
+                f"docker compose, escape every $ in the hash as $$ in .env."
+            )
+        return self
 
     @property
     def is_dev(self) -> bool:

@@ -18,6 +18,12 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
+# Docker
+# Postgres data written by the compose stack. Local only -- on EC2 this
+# lives on the EBS volume, not in the repo.
+pgdata/
+infra/pgdata/
+
 # Node
 node_modules/
 dist/
