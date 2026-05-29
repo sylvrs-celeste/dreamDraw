@@ -56,9 +56,9 @@ const RAIL: Record<string, string> = {
 
 export default function Timeline() {
   const [params, setParams] = useSearchParams();
-  // Oldest first by default. The gallery is a wall and reads newest-first;
-  // this is a journey and only means anything read from the beginning.
-  const sort = params.get("sort") === "desc" ? "desc" : "asc";
+  // Newest first, matching the gallery. Reading the journey from the start is
+  // one click away via the toggle.
+  const sort = params.get("sort") === "asc" ? "asc" : "desc";
 
   const entries = useQuery({
     queryKey: ["timeline", sort],
