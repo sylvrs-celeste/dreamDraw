@@ -20,6 +20,9 @@ bcrypt==4.0.1
 
 # Image pipeline (step 5) and S3.
 Pillow==11.1.0
+# HEIC/HEIF decoding. iPhones shoot HEIC by default, so without this every
+# photo straight off a phone is rejected.
+pillow-heif==0.21.0
 boto3==1.35.92
 
 python-slugify==8.0.4

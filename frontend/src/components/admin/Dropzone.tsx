@@ -2,7 +2,11 @@ import { useRef, useState } from "react";
 
 import { api, ApiError } from "../../api/client";
 
-const ACCEPT = ["image/jpeg", "image/png", "image/webp"];
+const ACCEPT = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+// Browsers disagree about HEIC: some report image/heic, others report an empty
+// type. Fall back to the extension so a phone photo is not rejected before it
+// is even sent -- the server checks magic bytes either way.
+const ACCEPT_EXT = /\.(jpe?g|png|webp|heic|heif)$/i;
 const MAX_BYTES = 25 * 1024 * 1024;
 const MAX_FILES = 20;
 
@@ -32,7 +36,8 @@ export default function Dropzone({ entryId, existingCount, onUploaded }: Props) 
     // Checked here for instant feedback, and again on the server by magic
     // bytes -- the type the browser reports is only a hint.
     const checked = files.slice(0, room).map((file) => {
-      if (!ACCEPT.includes(file.type)) return { file, error: "Not a JPEG, PNG or WebP" };
+      const looksRight = ACCEPT.includes(file.type) || ACCEPT_EXT.test(file.name);
+      if (!looksRight) return { file, error: "Not a JPEG, PNG, WebP or HEIC" };
       if (file.size > MAX_BYTES) return { file, error: "Larger than 25 MB" };
       return { file, error: undefined as string | undefined };
     });
@@ -104,7 +109,7 @@ export default function Dropzone({ entryId, existingCount, onUploaded }: Props) 
               {busy ? "Uploading…" : "Choose files"}
             </button>
             <p className="mt-3 text-xs text-stock/30">
-              JPEG, PNG or WebP · up to 25 MB each · {room} slot
+              JPEG, PNG, WebP or HEIC · up to 25 MB each · {room} slot
               {room === 1 ? "" : "s"} left
             </p>
           </>

@@ -3,9 +3,13 @@
 import io
 from dataclasses import dataclass
 
+import pillow_heif
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.config import settings
+
+# Teaches Pillow to open HEIC/HEIF. Must run before the first Image.open.
+pillow_heif.register_heif_opener()
 
 # A file's real type is decided by its first few bytes, never by the filename or
 # the Content-Type the browser claims. Both of those are attacker-controlled.
@@ -16,10 +20,18 @@ _MAGIC: tuple[tuple[str, int, bytes], ...] = (
     ("image/webp", 8, b"WEBP"),
 )
 
+# HEIC is an ISO base media container: "ftyp" at offset 4, then a brand code.
+# There are several brands in the wild and iPhones do not all emit the same
+# one, so match on the set rather than a single signature.
+_HEIF_BRANDS = frozenset(
+    (b"heic", b"heix", b"heim", b"heis", b"hevc", b"hevx", b"mif1", b"msf1")
+)
+
 _EXTENSION = {
     "image/jpeg": ".jpg",
     "image/png": ".png",
     "image/webp": ".webp",
+    "image/heic": ".heic",
 }
 
 # Pillow's own guard is ~89M pixels and only warns. A 25 MB PNG can hold far
@@ -55,6 +67,8 @@ def sniff_mime(data: bytes) -> str | None:
     for mime, offset, signature in _MAGIC:
         if data[offset : offset + len(signature)] == signature:
             return mime
+    if data[4:8] == b"ftyp" and data[8:12] in _HEIF_BRANDS:
+        return "image/heic"
     return None
 
 
@@ -87,7 +101,7 @@ def process(data: bytes) -> ProcessedImage:
 
     mime = sniff_mime(data)
     if mime is None or mime not in settings.allowed_mime_types:
-        raise InvalidImage("File is not a JPEG, PNG or WebP")
+        raise InvalidImage("File is not a JPEG, PNG, WebP or HEIC")
 
     try:
         image = Image.open(io.BytesIO(data))
