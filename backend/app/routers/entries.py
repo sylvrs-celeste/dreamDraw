@@ -11,7 +11,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
-from sqlalchemy import func, select
+from sqlalchemy import func, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -83,6 +83,30 @@ async def list_entries(
     )
 
 
+async def _neighbour(session: AsyncSession, entry: Entry, *, newer: bool) -> str | None:
+    """Slug of the adjacent entry by art date.
+
+    Ties on art_date are broken by created_at, matching how the gallery orders
+    its list -- otherwise stepping through entries could loop between two
+    pieces made on the same day.
+    """
+    key = (Entry.art_date, Entry.created_at)
+    here = (entry.art_date, entry.created_at)
+    if newer:
+        return await session.scalar(
+            select(Entry.slug)
+            .where(tuple_(*key) > tuple_(*here))
+            .order_by(Entry.art_date.asc(), Entry.created_at.asc())
+            .limit(1)
+        )
+    return await session.scalar(
+        select(Entry.slug)
+        .where(tuple_(*key) < tuple_(*here))
+        .order_by(Entry.art_date.desc(), Entry.created_at.desc())
+        .limit(1)
+    )
+
+
 @router.get("/{slug}", response_model=EntryDetail)
 async def get_entry(
     slug: str,
@@ -91,7 +115,11 @@ async def get_entry(
     entry = await session.scalar(select(Entry).where(Entry.slug == slug))
     if entry is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Entry not found")
-    return entry_detail(entry)
+    return entry_detail(
+        entry,
+        newer_slug=await _neighbour(session, entry, newer=True),
+        older_slug=await _neighbour(session, entry, newer=False),
+    )
 
 
 @router.post("", response_model=EntryDetail, status_code=status.HTTP_201_CREATED)

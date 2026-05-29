@@ -45,7 +45,12 @@ def entry_summary(entry: Entry) -> EntrySummary:
     )
 
 
-def entry_detail(entry: Entry) -> EntryDetail:
+def entry_detail(
+    entry: Entry,
+    *,
+    newer_slug: str | None = None,
+    older_slug: str | None = None,
+) -> EntryDetail:
     cover = _cover(entry)
     return EntryDetail(
         id=entry.id,
@@ -58,4 +63,6 @@ def entry_detail(entry: Entry) -> EntryDetail:
         images=[image_read(i) for i in entry.images],
         created_at=entry.created_at,
         updated_at=entry.updated_at,
+        newer_slug=newer_slug,
+        older_slug=older_slug,
     )
