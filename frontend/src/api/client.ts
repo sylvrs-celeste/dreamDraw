@@ -1,4 +1,11 @@
-import type { EntryDetail, EntryPage, SessionStatus, TagWithCount } from "./types";
+import type {
+  EntryDetail,
+  EntryPage,
+  Image,
+  SessionStatus,
+  TagWithCount,
+  UploadResult,
+} from "./types";
 
 /** Relative on purpose. Vite proxies /api in dev and CloudFront routes it in
  *  production, so the frontend never needs to know where the API lives. */
@@ -78,4 +85,85 @@ export const api = {
   logout() {
     return request<{ message: string }>("/auth/logout", { method: "POST" });
   },
+
+  createEntry(body: EntryInput) {
+    return request<EntryDetail>("/entries", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  updateEntry(id: string, body: Partial<EntryInput> & { cover_image_id?: string | null }) {
+    return request<EntryDetail>(`/entries/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+
+  deleteEntry(id: string) {
+    return request<void>(`/entries/${id}`, { method: "DELETE" });
+  },
+
+  updateImage(id: string, body: { alt_text?: string | null; sort_order?: number }) {
+    return request<Image>(`/images/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+
+  deleteImage(id: string) {
+    return request<void>(`/images/${id}`, { method: "DELETE" });
+  },
+
+  /** Upload with per-file progress.
+   *
+   *  XMLHttpRequest rather than fetch: fetch still has no way to observe
+   *  upload progress, and a 25 MB file with no feedback looks like a hang.
+   *  One request per file so a failure is isolated and each gets its own bar.
+   */
+  uploadImage(
+    entryId: string,
+    file: File,
+    onProgress: (percent: number) => void,
+  ): Promise<UploadResult> {
+    return new Promise((resolve, reject) => {
+      const form = new FormData();
+      form.append("files", file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${BASE}/entries/${entryId}/images`);
+      xhr.withCredentials = true;
+
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          onProgress(100);
+          resolve(JSON.parse(xhr.responseText));
+        } else {
+          let detail = xhr.statusText;
+          try {
+            detail = JSON.parse(xhr.responseText).detail ?? detail;
+          } catch {
+            /* not json */
+          }
+          reject(new ApiError(xhr.status, detail));
+        }
+      });
+
+      xhr.addEventListener("error", () => reject(new ApiError(0, "Network error")));
+      xhr.addEventListener("abort", () => reject(new ApiError(0, "Upload cancelled")));
+      xhr.send(form);
+    });
+  },
 };
+
+export interface EntryInput {
+  title: string;
+  art_date: string;
+  description?: string | null;
+  tags?: string[];
+  slug?: string | null;
+}

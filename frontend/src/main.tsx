@@ -3,7 +3,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+import RequireAuth from "./components/RequireAuth";
 import Layout from "./components/Layout";
+import AdminIndex from "./routes/admin/Index";
+import Login from "./routes/admin/Login";
 import EntryDetail from "./routes/EntryDetail";
 import Gallery from "./routes/Gallery";
 import Home from "./routes/Home";
@@ -36,6 +39,15 @@ const router = createBrowserRouter([
       { path: "gallery", element: <Gallery /> },
       { path: "timeline", element: <Timeline /> },
       { path: "e/:slug", element: <EntryDetail /> },
+      { path: "admin/login", element: <Login /> },
+      {
+        path: "admin",
+        element: (
+          <RequireAuth>
+            <AdminIndex />
+          </RequireAuth>
+        ),
+      },
       { path: "*", element: <NotFound /> },
     ],
   },

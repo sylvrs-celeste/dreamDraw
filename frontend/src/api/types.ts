@@ -54,3 +54,13 @@ export interface EntryPage {
 export interface SessionStatus {
   authenticated: boolean;
 }
+
+export interface UploadFailure {
+  filename: string;
+  error: string;
+}
+
+export interface UploadResult {
+  uploaded: Image[];
+  failed: UploadFailure[];
+}
