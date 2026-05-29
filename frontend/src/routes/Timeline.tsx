@@ -86,17 +86,17 @@ export default function Timeline() {
         </button>
       </div>
 
-      {entries.isPending && <p className="text-stock/45">Loading…</p>}
+      {entries.isPending && <p className="text-stock/60">Loading…</p>}
 
       {!entries.isPending && years.length === 0 && (
-        <p className="py-16 text-center text-stock/45">Nothing on the timeline yet.</p>
+        <p className="py-16 text-center text-stock/60">Nothing on the timeline yet.</p>
       )}
 
       {years.map((y) => (
         <section key={y.year} className="mb-4">
           <div className="flex items-baseline gap-4">
             <h2 className="font-hand text-3xl text-stock/90">{y.year}</h2>
-            <span className="text-xs tracking-wide text-stock/30 uppercase">
+            <span className="text-xs tracking-wide text-stock/55 uppercase">
               {y.count} {y.count === 1 ? "piece" : "pieces"}
             </span>
           </div>
@@ -117,7 +117,7 @@ export default function Timeline() {
                 }`}
               />
 
-              <h3 className="text-xs tracking-[0.18em] text-stock/45 uppercase">
+              <h3 className="text-xs tracking-[0.18em] text-stock/60 uppercase">
                 {month.label}
               </h3>
 
@@ -147,13 +147,13 @@ export default function Timeline() {
                           {e.title}
                         </span>
                         {e.tags.length > 0 && (
-                          <span className="block truncate text-xs text-stock/35">
+                          <span className="block truncate text-xs text-stock/55">
                             {e.tags.map((t) => t.name).join(" · ")}
                           </span>
                         )}
                       </span>
 
-                      <span className="shrink-0 text-xs text-stock/25 tabular-nums">
+                      <span className="shrink-0 text-xs text-stock/55 tabular-nums">
                         {e.art_date.slice(8)}
                       </span>
                     </Link>

@@ -28,7 +28,7 @@ export default function Login() {
   return (
     <section className="mx-auto flex min-h-[60dvh] max-w-sm flex-col justify-center">
       <h1 className="font-hand text-4xl text-stock">Let yourself in</h1>
-      <p className="mt-2 text-sm text-stock/50">Only you can add to the wall.</p>
+      <p className="mt-2 text-sm text-stock/60">Only you can add to the wall.</p>
 
       <form
         className="mt-8"
@@ -48,7 +48,7 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full rounded-sm border border-stock/20 bg-surface px-4 py-3
-                     text-stock placeholder:text-stock/30"
+                     text-stock placeholder:text-stock/55"
           placeholder="Password"
         />
 

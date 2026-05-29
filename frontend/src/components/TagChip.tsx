@@ -37,7 +37,10 @@ export default function TagChip({ slug, name, count, active = false, onClick }: 
       }`}
     >
       {name}
-      {count !== undefined && <span className="ml-1.5 opacity-60">{count}</span>}
+      {/* No extra opacity here. Dimming on top of an already-translucent
+          accent compounds: opacity-60 measured 1.9:1 and even 85% only
+          reached 4.0:1. The smaller size carries the hierarchy instead. */}
+      {count !== undefined && <span className="ml-1.5 text-[0.68em]">{count}</span>}
     </button>
   );
 }

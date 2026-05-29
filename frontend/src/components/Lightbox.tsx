@@ -91,7 +91,7 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Prop
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="absolute top-4 right-5 text-2xl text-stock/50 hover:text-stock"
+        className="absolute top-4 right-5 text-2xl text-stock/60 hover:text-stock"
       >
         ×
       </button>
@@ -102,7 +102,7 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Prop
             type="button"
             aria-label="Previous image"
             onClick={(e) => { e.stopPropagation(); go(-1); }}
-            className="absolute left-2 z-10 px-4 py-8 text-3xl text-stock/40 hover:text-stock sm:left-6"
+            className="absolute left-2 z-10 px-4 py-8 text-3xl text-stock/55 hover:text-stock sm:left-6"
           >
             ‹
           </button>
@@ -110,7 +110,7 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Prop
             type="button"
             aria-label="Next image"
             onClick={(e) => { e.stopPropagation(); go(1); }}
-            className="absolute right-2 z-10 px-4 py-8 text-3xl text-stock/40 hover:text-stock sm:right-6"
+            className="absolute right-2 z-10 px-4 py-8 text-3xl text-stock/55 hover:text-stock sm:right-6"
           >
             ›
           </button>
@@ -133,7 +133,7 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Prop
         <figcaption className="flex items-baseline justify-between gap-4 px-1 py-3 text-ink">
           <span className="font-hand text-base">{image.alt_text || " "}</span>
           {images.length > 1 && (
-            <span className="shrink-0 text-[0.65rem] tracking-wide text-ink/50 uppercase">
+            <span className="shrink-0 text-[0.65rem] tracking-wide text-ink/65 uppercase">
               {index + 1} / {images.length}
             </span>
           )}
