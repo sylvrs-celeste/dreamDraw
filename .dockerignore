@@ -1,0 +1,17 @@
+# Build context hygiene: none of this belongs in an image, and shipping it
+# would bust the layer cache on every unrelated change.
+.git
+.gitignore
+CLAUDE.md
+docs/
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+**/venv/
+frontend/node_modules/
+frontend/dist/
+.env
+.env.*
+!.env.example
+**/.DS_Store
+infra/
