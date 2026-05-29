@@ -44,6 +44,13 @@ ssh "${SSHOPTS[@]}" "$HOST" '
   cd ~/app
   docker compose --env-file .env -f infra/docker-compose.yml up -d --build
   docker compose --env-file .env -f infra/docker-compose.yml ps --format "  {{.Service}}  {{.Status}}"
+
+  # The root volume is 8 GB and a full rebuild adds roughly 700 MB of layers.
+  # Without this, four or five deploys fill the disk and the next one fails
+  # somewhere unhelpful.
+  docker builder prune -af >/dev/null 2>&1 || true
+  docker image prune -f >/dev/null 2>&1 || true
+  df -h / | tail -1 | awk "{printf \"  root disk: %s used of %s (%s)\\n\", \$3, \$2, \$5}"
 '
 
 echo "== checks =="

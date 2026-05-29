@@ -3,7 +3,8 @@
 set -eux
 
 dnf -y update
-dnf -y install docker git
+dnf -y install docker git cronie
+systemctl enable --now crond
 
 # Compose v2 as a CLI plugin. AL2023 does not package it, and the standalone
 # docker-compose binary is the old Python one.
