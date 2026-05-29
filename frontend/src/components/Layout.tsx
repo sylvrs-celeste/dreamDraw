@@ -16,6 +16,9 @@ export default function Layout() {
         </NavLink>
         <nav className="flex gap-1 text-sm" aria-label="Main">
           <NavLink to="/" end className={linkClass}>
+            Home
+          </NavLink>
+          <NavLink to="/gallery" className={linkClass}>
             Gallery
           </NavLink>
           <NavLink to="/timeline" className={linkClass}>
