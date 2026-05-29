@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/* Dark studio.
+   Three greys rather than one: on a near-black page a drop shadow has nowhere
+   to fall, and the polaroids end up looking like flat stickers instead of
+   photographs resting on a surface. */
+/* `static` so every token is emitted whether or not a class references it
+   yet. Plain @theme prunes unused variables, which would quietly drop
+   --color-well until something happened to use it. */
+@theme static {
+  --color-canvas: #22232a;
+  --color-surface: #2b2c34;
+  --color-well: #17181d;
+
+  --color-stock: #f4f1ea; /* polaroid card, ~12:1 on canvas */
+  --color-ink: #1c1b19; /* caption text on stock */
+
+  --color-accent-amber: #d99a4e;
+  --color-accent-rust: #b5613c;
+  --color-accent-teal: #4d8f8b;
+
+  --font-ui: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", cursive;
+
+  /* Tight contact shadow plus a wide ambient one. The pair is what sells
+     "object resting on a surface" rather than "rectangle with a blur". */
+  --shadow-polaroid: 0 1px 2px rgb(0 0 0 / 0.35), 0 12px 28px -8px rgb(0 0 0 / 0.5);
+  --shadow-polaroid-lift: 0 2px 4px rgb(0 0 0 / 0.4), 0 22px 44px -10px rgb(0 0 0 / 0.55);
+}
+
+html {
+  background-color: var(--color-canvas);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-stock);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+/* Film grain. Tiled SVG turbulence as a data URI so it costs no request, sits
+   above the canvas but below everything else, and never eats clicks. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Focus has to be visible on a dark ground, and applies to keyboard users
+   only so a mouse click doesn't leave a ring behind. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-amber);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Honour the OS setting. Rotation flattens and motion collapses to opacity;
+   tilted cards are the whole visual idea, but not at the cost of making
+   someone ill. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
