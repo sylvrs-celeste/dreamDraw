@@ -18,6 +18,22 @@ class StorageError(Exception):
     pass
 
 
+def _endpoint() -> str | None:
+    """Which S3 endpoint to talk to.
+
+    MinIO wins if it is configured. Otherwise pin the regional host explicitly:
+    left to itself boto3 resolves to the legacy global s3.amazonaws.com, and a
+    presigned URL signed there is rejected with SignatureDoesNotMatch for a
+    bucket living in any region but us-east-1. Uploads still succeed, so the
+    breakage only shows up when the browser tries to load an image.
+    """
+    if settings.s3_endpoint_url:
+        return settings.s3_endpoint_url
+    if settings.aws_region:
+        return f"https://s3.{settings.aws_region}.amazonaws.com"
+    return None
+
+
 @lru_cache(maxsize=1)
 def client():
     """One shared boto3 client.
@@ -29,7 +45,7 @@ def client():
     return boto3.client(
         "s3",
         region_name=settings.aws_region,
-        endpoint_url=settings.s3_endpoint_url or None,
+        endpoint_url=_endpoint(),
         config=Config(
             signature_version="s3v4",
             retries={"max_attempts": 3, "mode": "standard"},
