@@ -33,7 +33,7 @@ export default function AdminIndex() {
         {entries.data?.items.map((e) => (
           <li key={e.id}>
             <Link
-              to={`/admin/e/${e.id}`}
+              to={`/admin/e/${e.slug}`}
               className="flex items-center gap-4 py-3 hover:bg-surface/40"
             >
               {e.cover_image ? (
