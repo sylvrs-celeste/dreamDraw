@@ -1,0 +1,44 @@
+# Agent context — local only
+CLAUDE.md
+.claude/settings.local.json
+docs/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# AWS provisioning output: account ids, resource ids, generated policies.
+# Not secret, but there is no reason to publish the account's topology.
+infra/aws/resources.env
+infra/aws/s3-policy.json
+
+# Docker
+# Postgres data written by the compose stack. Local only -- on EC2 this
+# lives on the EBS volume, not in the repo.
+pgdata/
+infra/pgdata/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

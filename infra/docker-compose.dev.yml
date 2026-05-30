@@ -1,0 +1,18 @@
+# Local-only overlay. Use it alongside the base file:
+#
+#   docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up --build
+#
+# The only thing it does is hand the API your AWS credentials. On EC2 the
+# instance role supplies them through the metadata service and nothing needs
+# mounting, which is why this is not in the base file -- deploy.sh must not
+# pick it up.
+
+services:
+  api:
+    volumes:
+      - ${HOME}/.aws:/aws:ro
+    environment:
+      # Pointed at explicitly rather than relying on ~ expanding: the process
+      # runs as nobody, whose home is /nonexistent.
+      AWS_SHARED_CREDENTIALS_FILE: /aws/credentials
+      AWS_CONFIG_FILE: /aws/config
