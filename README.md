@@ -30,33 +30,34 @@ except through the CDN.
 ## 🏗️ Architecture Overview
 
 ```mermaid
+%%{init: {'flowchart': {'wrappingWidth': 300, 'nodeSpacing': 40, 'rankSpacing': 55}}}%%
 graph LR
 
   %% ============= USER ENTRY =============
-  U[👤 Visitor] --> CF[🌍 CloudFront CDN<br/>Global Distribution + Free ACM Certificate]
+  U[👤 Visitor] --> CF[🌍 CloudFront CDN<br/>HTTPS + Free ACM Cert]
 
   %% ============= EDGE BEHAVIOURS =============
-  CF --> APIB[⚙️ /api/*<br/>CachingDisabled + All Viewer Headers]
-  CF --> ASTB[📦 /assets/*<br/>Immutable 1 Year + Content-Hashed]
-  CF --> APPB[📄 /* Default<br/>No-Cache on index.html + SPA Fallback]
+  CF --> APIB[⚙️ /api/*<br/>CachingDisabled + All Headers]
+  CF --> ASTB[📦 /assets/*<br/>Immutable + Content-Hashed]
+  CF --> APPB[📄 /* Default<br/>No-Cache + SPA Fallback]
 
   %% ============= NETWORK LOCKDOWN =============
-  APIB --> ALB[⚖️ Application Load Balancer<br/>2 Availability Zones + Origin-Facing Prefix List]
+  APIB --> ALB[⚖️ Load Balancer<br/>2 AZs + CDN Prefix List Only]
   ASTB --> ALB
   APPB --> ALB
-  ALB --> EC2[🖥️ EC2 t4g.small · Graviton<br/>:80 From ALB Only + :22 From Owner + IMDSv2]
+  ALB --> EC2[🖥️ EC2 t4g.small<br/>Graviton + Locked Ingress]
 
   %% ============= CONTAINERS =============
-  EC2 --> WEB[🔀 nginx<br/>Serves Build + Proxies /api]
-  WEB --> API[⚡ FastAPI + Uvicorn<br/>Internal Only + Never Published]
+  EC2 --> WEB[🔀 nginx<br/>Serves Build + Proxies API]
+  WEB --> API[⚡ FastAPI + Uvicorn<br/>Internal Only, Unpublished]
 
   %% ============= PERSISTENCE =============
-  API --> DB[(🐘 PostgreSQL 16<br/>Dedicated EBS Volume + Survives Replacement)]
-  API --> IAM[🔑 IAM Instance Role<br/>Scoped to One Bucket + No Keys on Disk]
-  IAM --> S3[(🪣 S3 Bucket<br/>Block Public Access + AES256 Encryption)]
+  API --> DB[(🐘 PostgreSQL 16<br/>Dedicated EBS Volume)]
+  API --> IAM[🔑 IAM Instance Role<br/>One Bucket, No Keys]
+  IAM --> S3[(🪣 S3 Bucket<br/>Private + AES256)]
 
   %% ============= BACKUP & DELIVERY =============
-  DB --> BAK[(🗄️ Nightly pg_dump<br/>03:00 UTC + 14-Day Retention)]
+  DB --> BAK[(🗄️ Nightly pg_dump<br/>14-Day Retention)]
   BAK --> S3
   U -.->|Presigned GET · 1 h TTL| S3
 ```
