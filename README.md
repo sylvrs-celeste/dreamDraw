@@ -30,32 +30,36 @@ except through the CDN.
 ## 🏗️ Architecture Overview
 
 ```mermaid
+%%{init: {'flowchart': {'wrappingWidth': 300, 'nodeSpacing': 40, 'rankSpacing': 55}}}%%
 graph LR
 
-  %% ============= ENTRY =============
-  U[👤 Visitor] --> CF[🌍 CloudFront<br/>HTTPS + free ACM cert]
+  %% ============= USER ENTRY =============
+  U[👤 Visitor] --> CF[🌍 CloudFront CDN<br/>HTTPS + Free ACM Cert]
 
   %% ============= EDGE BEHAVIOURS =============
-  CF --> B1[⚙️ /api/*<br/>CachingDisabled<br/>AllViewerExceptHostHeader<br/>POST PATCH DELETE allowed]
-  CF --> B2[📦 /assets/*<br/>immutable, 1 year<br/>content-hashed filenames]
-  CF --> B3[📄 /*<br/>no-cache on index.html<br/>SPA fallback]
+  CF --> APIB[⚙️ /api/*<br/>CachingDisabled + All Headers]
+  CF --> ASTB[📦 /assets/*<br/>Immutable + Content-Hashed]
+  CF --> APPB[📄 /* Default<br/>No-Cache + SPA Fallback]
 
   %% ============= NETWORK LOCKDOWN =============
-  B1 --> ALB[⚖️ Application Load Balancer<br/>2 AZs · ingress restricted to the<br/>CloudFront origin-facing prefix list]
-  B2 --> ALB
-  B3 --> ALB
-
-  ALB --> EC2[🖥️ EC2 t4g.small · Graviton<br/>:80 from the ALB security group only<br/>:22 from the owner's IP only]
+  APIB --> ALB[⚖️ Load Balancer<br/>2 AZs + CDN Prefix List Only]
+  ASTB --> ALB
+  APPB --> ALB
+  ALB --> EC2[🖥️ EC2 t4g.small<br/>Graviton + Locked Ingress]
 
   %% ============= CONTAINERS =============
-  EC2 --> WEB[🔀 nginx<br/>serves the build, proxies /api]
-  WEB --> API[⚡ FastAPI + Uvicorn<br/>internal only, never published]
-  API --> DB[(🐘 PostgreSQL 16<br/>on a dedicated EBS volume<br/>survives instance replacement)]
+  EC2 --> WEB[🔀 nginx<br/>Serves Build + Proxies API]
+  WEB --> API[⚡ FastAPI + Uvicorn<br/>Internal Only, Unpublished]
 
-  %% ============= STORAGE =============
-  API -->|IAM instance role<br/>no keys on the box| S3[(🪣 S3 · Block Public Access ON<br/>originals + WebP derivatives)]
-  U -.->|presigned GET, 1 h TTL| S3
-  API --> BAK[🗄️ Nightly pg_dump<br/>to S3, 14-day retention]
+  %% ============= PERSISTENCE =============
+  API --> DB[(🐘 PostgreSQL 16<br/>Dedicated EBS Volume)]
+  API --> IAM[🔑 IAM Instance Role<br/>One Bucket, No Keys]
+  IAM --> S3[(🪣 S3 Bucket<br/>Private + AES256)]
+
+  %% ============= BACKUP & DELIVERY =============
+  DB --> BAK[(🗄️ Nightly pg_dump<br/>14-Day Retention)]
+  BAK --> S3
+  U -.->|Presigned GET · 1 h TTL| S3
 ```
 
 ---
