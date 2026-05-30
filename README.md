@@ -25,6 +25,8 @@ except through the CDN.
 
 ![The gallery](utils/gallery.png)
 
+<sub>Live at <code>d1arjq78faqmon.cloudfront.net</code></sub>
+
 ## 🏗️ Architecture Overview
 
 ```mermaid
@@ -84,11 +86,11 @@ graph LR
 | | |
 |---|---|
 | ![Home](utils/home.png) | ![Timeline](utils/timeline.png) |
-| **Home** — a welcome and a way in | **Timeline** — the journey by month and year |
-| ![Entry](utils/entry.png) | ![Lightbox](utils/lightbox.png) |
-| **Entry** — plates, notes and tags | **Lightbox** — straightened and scaled up |
-| ![Studio](utils/studio.png) | ![Editor](utils/editor.png) |
-| **Studio** — everything you have made | **Editor** — uploader and image ordering |
+| **Home** — a greeting and a way in | **Timeline** — grouped by month and year, with an accent rail |
+| ![Entry](utils/entry.png) | ![Gallery](utils/gallery-more.png) |
+| **Entry** — the work, its notes and its tags | **The wall** — masonry, each card tilted by a hash of its id |
+| ![Lightbox](utils/lightbox.png) | ![Studio](utils/studio.png) |
+| **Lightbox** — the polaroid straightens and scales up; arrow keys and swipe navigate | **Studio** — the private side: everything made so far, and a way in to edit it |
 
 ## 📁 Project Structure
 
