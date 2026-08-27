@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import ImageManager from "../../components/admin/ImageManager";
 import { api } from "../../api/client";
 import type { EntryDetail } from "../../api/types";
 
@@ -221,6 +222,10 @@ function Form({ entry }: { entry: EntryDetail | null }) {
           )}
         </div>
       </form>
+
+      {/* Only on an entry that exists -- there is nothing to attach images to
+          until it has been created. */}
+      {entry && <ImageManager entry={entry} />}
     </section>
   );
 }
