@@ -121,7 +121,9 @@ export default function Timeline() {
                 {month.label}
               </h3>
 
-              <ul className="mt-3 space-y-1">
+              {/* Capped width: left to fill a 2560px screen the day number ends
+                  up a foot away from the title it belongs to. */}
+              <ul className="mt-3 max-w-2xl space-y-1">
                 {month.entries.map((e) => (
                   <li key={e.id}>
                     <Link
