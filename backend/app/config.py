@@ -52,7 +52,15 @@ class Settings(BaseSettings):
     # -- uploads --------------------------------------------------------
     max_upload_bytes: int = 25 * 1024 * 1024
     max_files_per_entry: int = 20
-    allowed_mime_types: tuple[str, ...] = ("image/jpeg", "image/png", "image/webp")
+    # HEIC is accepted because phones shoot it. It is decoded and converted
+    # like anything else; derivatives are always WebP, so nothing downstream
+    # has to know a browser cannot render HEIC.
+    allowed_mime_types: tuple[str, ...] = (
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+    )
 
     # -- derivatives ----------------------------------------------------
     thumb_max_edge: int = 400
