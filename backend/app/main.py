@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import engine
-from app.routers import auth, entries, health, tags
+from app.routers import auth, entries, health, images, tags
 
 
 @asynccontextmanager
@@ -43,4 +43,5 @@ if settings.is_dev:
 app.include_router(health.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(entries.router, prefix="/api")
+app.include_router(images.router, prefix="/api")
 app.include_router(tags.router, prefix="/api")

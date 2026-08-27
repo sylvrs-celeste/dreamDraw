@@ -9,23 +9,28 @@ already holds.
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db import get_session
 from app.deps import require_session
-from app.models import Entry, Tag
+from app.models import Entry, Image, Tag
 from app.schemas.entry import (
     EntryCreate,
     EntryDetail,
     EntryPage,
-    EntrySummary,
     EntryUpdate,
+    UploadFailure,
+    UploadResult,
 )
+from app.services import storage
+from app.services.images import InvalidImage, process
+from app.services.presenters import entry_detail, entry_summary, image_read
 from app.services.slugs import unique_entry_slug
-from app.services.tags import resolve_tags
+from app.services.tags import delete_orphan_tags, resolve_tags
 
 router = APIRouter(prefix="/entries", tags=["entries"])
 
@@ -70,7 +75,7 @@ async def list_entries(
     entries = (await session.execute(stmt)).scalars().all()
 
     return EntryPage(
-        items=[EntrySummary.model_validate(e) for e in entries],
+        items=[entry_summary(e) for e in entries],
         total=total or 0,
         page=page,
         per_page=per_page,
@@ -86,7 +91,7 @@ async def get_entry(
     entry = await session.scalar(select(Entry).where(Entry.slug == slug))
     if entry is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Entry not found")
-    return EntryDetail.model_validate(entry)
+    return entry_detail(entry)
 
 
 @router.post("", response_model=EntryDetail, status_code=status.HTTP_201_CREATED)
@@ -107,7 +112,7 @@ async def create_entry(
     session.add(entry)
     await session.commit()
     await session.refresh(entry)
-    return EntryDetail.model_validate(entry)
+    return entry_detail(entry)
 
 
 @router.patch("/{entry_id}", response_model=EntryDetail)
@@ -141,6 +146,8 @@ async def update_entry(
 
     if "tags" in fields and fields["tags"] is not None:
         entry.tags = await resolve_tags(session, fields["tags"])
+        await session.flush()
+        await delete_orphan_tags(session)
 
     if "cover_image_id" in fields:
         cover_id = fields["cover_image_id"]
@@ -156,7 +163,7 @@ async def update_entry(
 
     await session.commit()
     await session.refresh(entry)
-    return EntryDetail.model_validate(entry)
+    return entry_detail(entry)
 
 
 @router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -167,10 +174,104 @@ async def delete_entry(
 ) -> Response:
     entry = await _get_by_id(session, entry_id)
 
-    # The cascade clears the image rows, but S3 has no idea any of this
-    # happened. Step 5 has to delete the objects here as well, otherwise every
-    # deleted entry leaves files in the bucket that nothing will ever
-    # reference again. Safe as it stands only because nothing can upload yet.
+    # Collect the keys before the cascade takes the rows away.
+    keys = [
+        k
+        for image in entry.images
+        for k in (image.s3_key_original, image.s3_key_medium, image.s3_key_thumb)
+    ]
+
     await session.delete(entry)
+    await session.flush()
+    await delete_orphan_tags(session)
     await session.commit()
+
+    await run_in_threadpool(storage.delete_many, keys)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/{entry_id}/images",
+    response_model=UploadResult,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_images(
+    entry_id: uuid.UUID,
+    files: list[UploadFile],
+    session: AsyncSession = Depends(get_session),
+    _auth: dict = Depends(require_session),
+) -> UploadResult:
+    entry = await _get_by_id(session, entry_id)
+
+    existing = len(entry.images)
+    if existing + len(files) > settings.max_files_per_entry:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            f"An entry can hold {settings.max_files_per_entry} images; "
+            f"this one already has {existing}",
+        )
+
+    next_order = max((i.sort_order for i in entry.images), default=-1) + 1
+    uploaded: list[Image] = []
+    failed: list[UploadFailure] = []
+
+    for file in files:
+        name = file.filename or "unnamed"
+        raw = await file.read()
+        try:
+            # Pillow is CPU-bound and boto3 blocks. On the event loop a 25 MB
+            # upload would stall every other request, health checks included.
+            processed = await run_in_threadpool(process, raw)
+        except InvalidImage as exc:
+            failed.append(UploadFailure(filename=name, error=str(exc)))
+            continue
+
+        image_id = uuid.uuid4()
+        keys = storage.build_keys(entry.id, image_id, processed.extension)
+
+        try:
+            await run_in_threadpool(
+                storage.put, keys["original"], processed.original, processed.mime_type
+            )
+            await run_in_threadpool(
+                storage.put, keys["medium"], processed.medium.data, "image/webp"
+            )
+            await run_in_threadpool(
+                storage.put, keys["thumb"], processed.thumb.data, "image/webp"
+            )
+        except storage.StorageError as exc:
+            # Don't leave half an image in the bucket for a row that will
+            # never exist.
+            await run_in_threadpool(storage.delete_many, list(keys.values()))
+            failed.append(UploadFailure(filename=name, error=str(exc)))
+            continue
+
+        image = Image(
+            id=image_id,
+            entry_id=entry.id,
+            s3_key_original=keys["original"],
+            s3_key_medium=keys["medium"],
+            s3_key_thumb=keys["thumb"],
+            width=processed.width,
+            height=processed.height,
+            mime_type=processed.mime_type,
+            size_bytes=len(processed.original),
+            sort_order=next_order,
+        )
+        session.add(image)
+        uploaded.append(image)
+        next_order += 1
+
+    await session.flush()
+
+    # First image to arrive becomes the cover unless one was already picked.
+    if entry.cover_image_id is None and uploaded:
+        entry.cover_image_id = uploaded[0].id
+
+    await session.commit()
+    for image in uploaded:
+        await session.refresh(image)
+
+    return UploadResult(
+        uploaded=[image_read(i) for i in uploaded], failed=failed
+    )

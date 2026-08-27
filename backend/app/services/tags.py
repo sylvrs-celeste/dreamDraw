@@ -41,3 +41,22 @@ async def resolve_tags(session: AsyncSession, names: list[str]) -> list[Tag]:
     # entry in the same transaction.
     await session.flush()
     return tags
+
+
+async def delete_orphan_tags(session: AsyncSession) -> int:
+    """Drop tags that no longer belong to any entry.
+
+    Tags get created just by typing them, so retagging or deleting an entry
+    tends to leave strays behind. Left alone they pile up in the filter tray as
+    buttons that lead to an empty gallery.
+
+    Call after the change is flushed, or the rows being removed will still look
+    attached.
+    """
+    from sqlalchemy import delete
+
+    from app.models import entry_tags
+
+    used = select(entry_tags.c.tag_id)
+    result = await session.execute(delete(Tag).where(Tag.id.not_in(used)))
+    return result.rowcount or 0

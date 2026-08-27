@@ -19,10 +19,10 @@ class TagWithCount(TagRead):
 
 
 class ImageRead(BaseModel):
-    """Image metadata only.
+    """What the browser gets for one image.
 
-    S3 keys are never returned. The browser gets presigned URLs instead, which
-    step 5 attaches once the storage service exists.
+    S3 keys never appear here. The urls are presigned and expire after an hour,
+    so anything caching this response must expire sooner.
     """
 
     model_config = ConfigDict(from_attributes=True)
@@ -30,6 +30,8 @@ class ImageRead(BaseModel):
     id: uuid.UUID
     alt_text: str | None
     sort_order: int
+    url_thumb: str
+    url_medium: str
     # The gallery reserves space from this ratio so the masonry doesn't reflow
     # as images arrive.
     width: int
@@ -93,3 +95,21 @@ class EntryPage(BaseModel):
     page: int
     per_page: int
     has_next: bool
+
+
+class ImageUpdate(BaseModel):
+    alt_text: str | None = Field(default=None, max_length=500)
+    sort_order: int | None = Field(default=None, ge=0)
+
+
+class UploadFailure(BaseModel):
+    filename: str
+    error: str
+
+
+class UploadResult(BaseModel):
+    """One bad file in a drop of twenty should not lose the other nineteen,
+    so failures are reported alongside whatever did make it."""
+
+    uploaded: list[ImageRead]
+    failed: list[UploadFailure]
