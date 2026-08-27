@@ -119,7 +119,7 @@ export default function EntryDetail() {
         )}
 
         <Link to="/gallery" className="text-stock/45 underline underline-offset-4 hover:text-stock">
-          All work
+          Back to Gallery
         </Link>
 
         {e.older_slug ? (
