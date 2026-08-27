@@ -9,8 +9,9 @@ social features — just the work, in order.
 
 ## Status
 
-Early. The backend core is in place (models, migration, health check); the API
-routes, image pipeline, and frontend are not built yet.
+Working end to end locally: gallery, timeline, entry pages with a lightbox, and
+an admin area for writing entries and uploading images. Runs under compose.
+Not yet deployed — the AWS infrastructure is the remaining piece.
 
 ## Stack
 
@@ -30,25 +31,33 @@ cp .env.example .env
 `ADMIN_PASSWORD_HASH` and `JWT_SECRET` need real values before the auth routes
 land; the health check works without them.
 
+**Escape every `$` in `ADMIN_PASSWORD_HASH` as `$$`.** Compose treats `$NAME`
+in an env file as a variable and substitutes it away, which quietly truncates a
+bcrypt hash and makes every login fail while the app otherwise looks healthy.
+The API refuses to start if the hash arrives malformed.
+
+The whole stack, nginx on port 8080:
+
 ```bash
-docker compose up --build      # not yet written — see Roadmap step 11
+docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up --build
 ```
 
-Until the compose file exists, the backend can be run against a throwaway
-database:
+The dev overlay only exists to pass your AWS credentials through to the API.
+On the instance the IAM role supplies them, so deployment uses the base file
+alone.
+
+`GET /api/health` returns `{"status":"ok","database":"ok"}`. Interactive docs
+are at `/api/docs` when `ENV=dev`.
+
+### Working on the frontend
+
+Compose serves a production build, so it will not hot-reload. For frontend work
+run Vite against the API instead — it proxies `/api` through, so the session
+cookie behaves the same as it does behind CloudFront:
 
 ```bash
-docker run -d --name dd-pg \
-  -e POSTGRES_USER=dreamdraw -e POSTGRES_PASSWORD=dreamdraw -e POSTGRES_DB=dreamdraw \
-  -p 5432:5432 postgres:16
-
-cd backend
-alembic upgrade head
-uvicorn app.main:app --reload
+cd frontend && npm run dev      # http://localhost:5173
 ```
-
-`GET /api/health` should return `{"status":"ok","database":"ok"}`. Interactive
-docs are at `/api/docs` when `ENV=dev`.
 
 ## Database changes
 
@@ -70,7 +79,7 @@ one case where the generated output was silently missing a constraint.
 ```
 backend/     FastAPI app, SQLAlchemy models, Alembic migrations
 frontend/    React + TypeScript client            (not started)
-infra/       Dockerfiles, nginx config, compose   (not started)
+infra/       Dockerfiles, nginx config, compose
 docs/        SRS and working notes                (gitignored)
 ```
 
