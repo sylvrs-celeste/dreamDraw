@@ -38,6 +38,9 @@ export interface EntryDetail extends EntrySummary {
   images: Image[];
   created_at: string;
   updated_at: string;
+  /** Adjacent entries by art date. Null at either end of the journey. */
+  newer_slug: string | null;
+  older_slug: string | null;
 }
 
 export interface EntryPage {

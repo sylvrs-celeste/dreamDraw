@@ -88,6 +88,11 @@ class EntryDetail(EntrySummary):
     created_at: datetime
     updated_at: datetime
 
+    # Named by direction rather than prev/next, which flips meaning depending
+    # on which way the gallery happens to be sorted.
+    newer_slug: str | None = None
+    older_slug: str | None = None
+
 
 class EntryPage(BaseModel):
     items: list[EntrySummary]
