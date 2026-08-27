@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     # -- aws ------------------------------------------------------------
     s3_bucket: str = ""
     aws_region: str = "us-east-1"
+    # Point boto3 at an S3-compatible server (MinIO) for local work. Empty
+    # means real S3. Only the endpoint changes; the presigning path is the same.
+    s3_endpoint_url: str = ""
     # Keep the frontend's query stale time below this or a tab left open
     # overnight will try to render expired URLs.
     presign_ttl_seconds: int = 3600
