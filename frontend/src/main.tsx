@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RequireAuth from "./components/RequireAuth";
 import Layout from "./components/Layout";
 import AdminIndex from "./routes/admin/Index";
+import EntryForm from "./routes/admin/EntryForm";
 import Login from "./routes/admin/Login";
 import EntryDetail from "./routes/EntryDetail";
 import Gallery from "./routes/Gallery";
@@ -45,6 +46,22 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <AdminIndex />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "admin/new",
+        element: (
+          <RequireAuth>
+            <EntryForm />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "admin/e/:slug",
+        element: (
+          <RequireAuth>
+            <EntryForm />
           </RequireAuth>
         ),
       },
