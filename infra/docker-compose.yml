@@ -1,0 +1,55 @@
+# Run from the repo root:  docker compose -f infra/docker-compose.yml up --build
+# Build context is the repo root so both images can reach backend/ and frontend/.
+
+name: dreamdraw
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dreamdraw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dreamdraw}
+      POSTGRES_DB: ${POSTGRES_DB:-dreamdraw}
+    volumes:
+      # On EC2 this path is the mounted EBS volume, which is the whole point:
+      # the data outlives the instance. Locally it is just a folder.
+      - ${POSTGRES_DATA:-./pgdata}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dreamdraw}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Deliberately not published. Nothing outside the compose network has any
+    # business talking to Postgres directly.
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      # Overrides whatever .env says: inside the network the host is the
+      # service name, not localhost.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-dreamdraw}:${POSTGRES_PASSWORD:-dreamdraw}@db:5432/${POSTGRES_DB:-dreamdraw}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Migrations run on start rather than in the image, so a deploy that only
+    # ships code cannot leave the schema behind. Alembic is a no-op when there
+    # is nothing to apply.
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1"
+    # Also not published: nginx is the only thing that talks to it.
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
