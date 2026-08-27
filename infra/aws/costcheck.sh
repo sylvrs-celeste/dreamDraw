@@ -12,7 +12,11 @@ printf "  stopped instances : %s  (no compute charge, but their volumes still bi
 printf "  load balancers    : %s  (~\$18.40/mo each)\n" "$(aws elbv2 describe-load-balancers --region "$REGION" --query 'length(LoadBalancers)' --output text 2>/dev/null || echo 0)"
 printf "  EBS volumes       : %s\n" "$(aws ec2 describe-volumes --region "$REGION" --query 'length(Volumes)' --output text)"
 printf "  unattached EBS    : %s  <- pure waste if not zero\n" "$(aws ec2 describe-volumes --region "$REGION" --filters Name=status,Values=available --query 'length(Volumes)' --output text)"
-printf "  elastic IPs       : %s  <- billed when NOT attached\n" "$(aws ec2 describe-addresses --region "$REGION" --query 'length(Addresses)' --output text)"
+# An ALB allocates one public IP per AZ and manages them itself; those are
+# fine. Only unattached addresses are waste.
+printf "  elastic IPs       : %s total, %s UNATTACHED  <- only the unattached ones waste money\n" \
+  "$(aws ec2 describe-addresses --region "$REGION" --query 'length(Addresses)' --output text)" \
+  "$(aws ec2 describe-addresses --region "$REGION" --query 'length(Addresses[?AssociationId==null])' --output text)"
 printf "  NAT gateways      : %s  <- expensive; should be 0\n" "$(aws ec2 describe-nat-gateways --region "$REGION" --filter Name=state,Values=available --query 'length(NatGateways)' --output text)"
 printf "  CloudFront dists  : %s  (free at this volume)\n" "$(aws cloudfront list-distributions --query 'length(DistributionList.Items)' --output text 2>/dev/null || echo 0)"
 printf "  S3 buckets        : %s  (pennies)\n" "$(aws s3api list-buckets --query 'length(Buckets)' --output text)"
