@@ -108,7 +108,7 @@ export default function Dropzone({ entryId, existingCount, onUploaded }: Props) 
             >
               {busy ? "Uploading…" : "Choose files"}
             </button>
-            <p className="mt-3 text-xs text-stock/30">
+            <p className="mt-3 text-xs text-stock/55">
               JPEG, PNG, WebP or HEIC · up to 25 MB each · {room} slot
               {room === 1 ? "" : "s"} left
             </p>
@@ -134,7 +134,7 @@ export default function Dropzone({ entryId, existingCount, onUploaded }: Props) 
             <li key={`${u.name}-${i}`} className="text-xs">
               <div className="flex items-baseline justify-between gap-3">
                 <span className="truncate text-stock/70">{u.name}</span>
-                <span className={u.error ? "text-accent-rust" : "text-stock/40"}>
+                <span className={u.error ? "text-accent-rust" : "text-stock/55"}>
                   {u.error ?? `${u.percent}%`}
                 </span>
               </div>

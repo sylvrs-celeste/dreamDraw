@@ -21,10 +21,10 @@ export default function AdminIndex() {
         </Link>
       </div>
 
-      {entries.isPending && <p className="text-stock/45">Loading…</p>}
+      {entries.isPending && <p className="text-stock/60">Loading…</p>}
 
       {entries.data?.items.length === 0 && (
-        <p className="py-16 text-center text-stock/45">
+        <p className="py-16 text-center text-stock/60">
           Nothing yet. Start with the first piece.
         </p>
       )}
@@ -47,12 +47,12 @@ export default function AdminIndex() {
               )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-stock">{e.title}</span>
-                <span className="block text-xs text-stock/40">
+                <span className="block text-xs text-stock/55">
                   {e.art_date}
                   {e.tags.length > 0 && ` · ${e.tags.map((t) => t.name).join(", ")}`}
                 </span>
               </span>
-              <span className="shrink-0 text-xs text-stock/30">edit</span>
+              <span className="shrink-0 text-xs text-stock/55">edit</span>
             </Link>
           </li>
         ))}

@@ -28,7 +28,7 @@ export default function RouteError() {
         <pre className="mt-6 overflow-x-auto rounded bg-well p-4 text-xs text-accent-rust">
           {message}
           {error instanceof Error && error.stack && (
-            <span className="block pt-2 text-stock/40">{error.stack}</span>
+            <span className="block pt-2 text-stock/55">{error.stack}</span>
           )}
         </pre>
       )}

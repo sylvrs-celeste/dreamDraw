@@ -8,8 +8,8 @@ import type { EntryDetail } from "../../api/types";
 
 const field =
   "w-full rounded-sm border border-stock/20 bg-surface px-3 py-2.5 text-stock " +
-  "placeholder:text-stock/25";
-const label = "block text-xs tracking-wide text-stock/45 uppercase";
+  "placeholder:text-stock/55";
+const label = "block text-xs tracking-wide text-stock/60 uppercase";
 
 function today(): string {
   // Local date, not toISOString() -- that converts to UTC and can hand back
@@ -35,7 +35,7 @@ export default function EntryForm() {
   });
 
   if (isEdit && existing.isPending) {
-    return <p className="py-24 text-center text-stock/40">Loading…</p>;
+    return <p className="py-24 text-center text-stock/55">Loading…</p>;
   }
   if (isEdit && existing.isError) {
     return (
@@ -138,7 +138,7 @@ function Form({ entry }: { entry: EntryDetail | null }) {
             onChange={(e) => setArtDate(e.target.value)}
             className={`${field} mt-1.5`}
           />
-          <p className="mt-1.5 text-xs text-stock/35">
+          <p className="mt-1.5 text-xs text-stock/55">
             This is what the gallery sorts by, not the day you upload it.
           </p>
         </div>
@@ -168,7 +168,7 @@ function Form({ entry }: { entry: EntryDetail | null }) {
             className={`${field} mt-1.5`}
             placeholder="collage, paper, studies"
           />
-          <p className="mt-1.5 text-xs text-stock/35">
+          <p className="mt-1.5 text-xs text-stock/55">
             Separated by commas. New ones are created as you type them; tags left
             with no entries are removed on their own.
           </p>
@@ -176,13 +176,13 @@ function Form({ entry }: { entry: EntryDetail | null }) {
 
         {isEdit && (
           <details className="rounded-sm border border-stock/10 px-3 py-2">
-            <summary className="cursor-pointer text-xs text-stock/40">Address</summary>
+            <summary className="cursor-pointer text-xs text-stock/55">Address</summary>
             <input
               value={slugField}
               onChange={(e) => setSlugField(e.target.value)}
               className={`${field} mt-3`}
             />
-            <p className="mt-1.5 text-xs text-stock/35">
+            <p className="mt-1.5 text-xs text-stock/55">
               Renaming the entry does not change this, so old links keep working.
               Change it only if you need to.
             </p>
@@ -204,7 +204,7 @@ function Form({ entry }: { entry: EntryDetail | null }) {
           >
             {save.isPending ? "Saving…" : isEdit ? "Save" : "Create"}
           </button>
-          <Link to="/admin" className="text-sm text-stock/45 hover:text-stock/80">
+          <Link to="/admin" className="text-sm text-stock/60 hover:text-stock/80">
             Cancel
           </Link>
 

@@ -28,7 +28,7 @@ export default function EntryDetail() {
   });
 
   if (entry.isPending) {
-    return <p className="py-24 text-center text-stock/50">Loading…</p>;
+    return <p className="py-24 text-center text-stock/60">Loading…</p>;
   }
 
   if (entry.isError || !entry.data) {
@@ -48,7 +48,7 @@ export default function EntryDetail() {
   return (
     <article className="pb-16">
       <header className="mx-auto max-w-3xl pt-4 pb-12">
-        <p className="text-xs tracking-[0.2em] text-stock/40 uppercase">
+        <p className="text-xs tracking-[0.2em] text-stock/55 uppercase">
           {formatArtDate(e.art_date)}
         </p>
         <h1 className="mt-3 font-hand text-4xl text-stock sm:text-5xl">{e.title}</h1>
@@ -69,7 +69,7 @@ export default function EntryDetail() {
       </header>
 
       {e.images.length === 0 ? (
-        <p className="py-16 text-center text-stock/45">No images on this entry yet.</p>
+        <p className="py-16 text-center text-stock/60">No images on this entry yet.</p>
       ) : (
         /* items-start, or grid stretches every card to the tallest in its row
            and leaves dead stock below the caption. */
@@ -115,10 +115,10 @@ export default function EntryDetail() {
             ← Newer
           </Link>
         ) : (
-          <span className="text-stock/20">← Newer</span>
+          <span className="text-stock/60">← Newer</span>
         )}
 
-        <Link to="/gallery" className="text-stock/45 underline underline-offset-4 hover:text-stock">
+        <Link to="/gallery" className="text-stock/60 underline underline-offset-4 hover:text-stock">
           Back to Gallery
         </Link>
 
@@ -127,7 +127,7 @@ export default function EntryDetail() {
             Older →
           </Link>
         ) : (
-          <span className="text-stock/20">Older →</span>
+          <span className="text-stock/60">Older →</span>
         )}
       </nav>
 

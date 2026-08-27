@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <section className="mx-auto flex min-h-[70dvh] max-w-2xl flex-col justify-center py-16">
-      <p className="text-sm tracking-[0.2em] text-stock/40 uppercase">{greeting()}</p>
+      <p className="text-sm tracking-[0.2em] text-stock/55 uppercase">{greeting()}</p>
 
       <h1 className="mt-4 font-hand text-5xl leading-tight text-stock sm:text-6xl">
         Welcome back.
@@ -38,7 +38,7 @@ export default function Home() {
         So — what have you drawn?
       </p>
 
-      <p className="mt-3 max-w-md text-sm leading-relaxed text-stock/45">
+      <p className="mt-3 max-w-md text-sm leading-relaxed text-stock/60">
         Everything you have made so far is pinned up in the studio. Add to it, or
         just go and look at how far it has come.
       </p>

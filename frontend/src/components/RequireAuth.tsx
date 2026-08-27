@@ -10,7 +10,7 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
   const { authenticated, isPending } = useSession();
   const location = useLocation();
 
-  if (isPending) return <p className="py-24 text-center text-stock/40">…</p>;
+  if (isPending) return <p className="py-24 text-center text-stock/55">…</p>;
 
   if (!authenticated) {
     // Remember where they were going so login can send them back.

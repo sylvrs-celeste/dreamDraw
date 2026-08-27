@@ -53,7 +53,7 @@ export default function Polaroid({ entry }: { entry: EntrySummary }) {
           />
         ) : (
           <div
-            className="grid aspect-4/3 w-full place-items-center bg-well/30 text-xs text-ink/40"
+            className="grid aspect-4/3 w-full place-items-center bg-well/30 text-xs text-ink/60"
             aria-hidden="true"
           >
             no image yet
@@ -64,7 +64,7 @@ export default function Polaroid({ entry }: { entry: EntrySummary }) {
             what reads as a polaroid rather than a framed print. */}
         <figcaption className="flex items-baseline justify-between gap-3 px-1 py-3.5">
           <span className="font-hand text-lg leading-none">{entry.title}</span>
-          <span className="shrink-0 text-[0.65rem] tracking-wide text-ink/50 uppercase">
+          <span className="shrink-0 text-[0.65rem] tracking-wide text-ink/65 uppercase">
             {formatArtDate(entry.art_date)}
           </span>
         </figcaption>

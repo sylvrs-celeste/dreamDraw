@@ -65,7 +65,7 @@ export default function ImageManager({ entry }: Props) {
   return (
     <section className="mt-12">
       <h2 className="font-hand text-2xl text-stock">Images</h2>
-      <p className="mt-1 mb-5 text-xs text-stock/35">
+      <p className="mt-1 mb-5 text-xs text-stock/55">
         The first image is the cover unless you choose another. Order here is the
         order they appear on the entry.
       </p>
@@ -99,9 +99,9 @@ export default function ImageManager({ entry }: Props) {
                     }
                   }}
                   className="w-full rounded-sm border border-stock/15 bg-surface px-2.5 py-1.5
-                             text-sm text-stock placeholder:text-stock/25"
+                             text-sm text-stock placeholder:text-stock/55"
                 />
-                <p className="mt-1.5 text-xs text-stock/30">
+                <p className="mt-1.5 text-xs text-stock/55">
                   Read aloud to anyone who cannot see the image. Worth writing.
                 </p>
 
@@ -112,7 +112,7 @@ export default function ImageManager({ entry }: Props) {
                     <button
                       type="button"
                       onClick={() => setCover.mutate(img.id)}
-                      className="text-stock/45 hover:text-stock/80"
+                      className="text-stock/60 hover:text-stock/80"
                     >
                       Make cover
                     </button>

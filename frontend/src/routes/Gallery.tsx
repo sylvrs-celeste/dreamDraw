@@ -72,7 +72,7 @@ export default function Gallery() {
         <h1 id="gallery-heading" className="sr-only">
           Gallery
         </h1>
-        <p className="text-xs tracking-wide text-stock/45 uppercase">
+        <p className="text-xs tracking-wide text-stock/60 uppercase">
           {entries.isPending ? " " : `${total} ${total === 1 ? "piece" : "pieces"}`}
         </p>
         <button
@@ -86,7 +86,7 @@ export default function Gallery() {
 
       {tags.data && <TagFilter tags={tags.data} active={tag} onChange={setTag} />}
 
-      {entries.isPending && <p className="text-stock/50">Loading…</p>}
+      {entries.isPending && <p className="text-stock/60">Loading…</p>}
 
       {entries.isError && (
         <p className="text-accent-rust">
@@ -95,7 +95,7 @@ export default function Gallery() {
       )}
 
       {!entries.isPending && !entries.isError && items.length === 0 && (
-        <p className="py-16 text-center text-stock/45">
+        <p className="py-16 text-center text-stock/60">
           {tag ? "Nothing tagged that yet." : "No entries yet."}
         </p>
       )}
@@ -120,7 +120,7 @@ export default function Gallery() {
 
       <div ref={sentinel} aria-hidden="true" className="h-px" />
       {isFetchingNextPage && (
-        <p className="py-8 text-center text-sm text-stock/45">Loading more…</p>
+        <p className="py-8 text-center text-sm text-stock/60">Loading more…</p>
       )}
     </section>
   );

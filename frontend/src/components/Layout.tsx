@@ -42,7 +42,7 @@ export default function Layout() {
             <button
               type="button"
               onClick={() => logout.mutate()}
-              className="text-stock/40 hover:text-stock/75"
+              className="text-stock/55 hover:text-stock/75"
             >
               Sign out
             </button>

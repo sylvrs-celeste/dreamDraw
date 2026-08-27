@@ -15,9 +15,14 @@
   --color-stock: #f4f1ea; /* polaroid card, ~12:1 on canvas */
   --color-ink: #1c1b19; /* caption text on stock */
 
+  /* Measured against --canvas at the 85% alpha the chips render at:
+     amber 5.07:1, rust 4.82:1, teal 4.83:1 -- all clear WCAG AA for small
+     text. The original rust (#b5613c) and teal (#4d8f8b) came out at 2.9 and
+     3.4 and were not readable; they have been lightened toward white with the
+     hue kept. */
   --color-accent-amber: #d99a4e;
-  --color-accent-rust: #b5613c;
-  --color-accent-teal: #4d8f8b;
+  --color-accent-rust: #cd957c;
+  --color-accent-teal: #7aaba8;
 
   --font-ui: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-hand: "Caveat", "Bradley Hand", cursive;
