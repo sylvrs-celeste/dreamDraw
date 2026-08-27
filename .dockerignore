@@ -14,4 +14,5 @@ frontend/dist/
 .env.*
 !.env.example
 **/.DS_Store
-infra/
+
+# infra/ is NOT ignored: Dockerfile.web copies nginx.conf out of it.
