@@ -6,7 +6,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import EntryDetail from "./routes/EntryDetail";
 import Gallery from "./routes/Gallery";
+import Home from "./routes/Home";
 import NotFound from "./routes/NotFound";
+import RouteError from "./routes/RouteError";
 import Timeline from "./routes/Timeline";
 import "./index.css";
 
@@ -28,9 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
-    errorElement: <NotFound />,
+    errorElement: <RouteError />,
     children: [
-      { index: true, element: <Gallery /> },
+      { index: true, element: <Home /> },
+      { path: "gallery", element: <Gallery /> },
       { path: "timeline", element: <Timeline /> },
       { path: "e/:slug", element: <EntryDetail /> },
       { path: "*", element: <NotFound /> },

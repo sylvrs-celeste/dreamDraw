@@ -75,3 +75,35 @@ body::before {
     scroll-behavior: auto !important;
   }
 }
+
+/* Polaroid card.
+   The tilt is a custom property rather than an inline transform: mixing an
+   inline `transform` with Tailwind's transform utilities means the two fight
+   for the same property on hover, and inside a multi-column layout that forces
+   the browser to re-rasterise the whole column. That showed up as cards
+   flickering and snapping back under the cursor.
+
+   Keeping every transform in one rule here avoids the conflict, and
+   will-change gives the card its own compositing layer so hovering it never
+   repaints its neighbours. */
+.polaroid {
+  transform: rotate(var(--tilt, 0deg));
+  transition:
+    transform 300ms ease-out,
+    box-shadow 300ms ease-out;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.polaroid:hover,
+.polaroid:focus-visible {
+  transform: translateY(-6px) rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polaroid,
+  .polaroid:hover,
+  .polaroid:focus-visible {
+    transform: none;
+  }
+}
