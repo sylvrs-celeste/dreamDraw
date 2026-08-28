@@ -30,54 +30,35 @@ except through the CDN.
 ## 🏗️ Architecture Overview
 
 ```mermaid
-graph TD
-    V(["👤 Visitor"])
+graph LR
 
-    subgraph EDGE ["🌍 CloudFront &nbsp;&mdash;&nbsp; HTTPS on the free ACM certificate"]
-        direction LR
-        API_B["<b>/api/*</b><br/>CachingDisabled<br/>AllViewerExceptHostHeader<br/>POST · PATCH · DELETE allowed"]
-        AST_B["<b>/assets/*</b><br/>immutable, 1 year<br/>content-hashed filenames"]
-        APP_B["<b>/*</b><br/>no-cache on index.html<br/>SPA fallback"]
-    end
+  %% ============= USER ENTRY =============
+  U[👤 Visitor] --> CF[🌍 CloudFront CDN<br/>Global Distribution + Free ACM Certificate]
 
-    subgraph NET ["🔒 Locked down &nbsp;&mdash;&nbsp; reachable only through the CDN"]
-        direction LR
-        ALB["⚖️ Application Load Balancer<br/>2 availability zones<br/><i>ingress: CloudFront prefix list only</i>"]
-        EC2["🖥️ EC2 t4g.small · Graviton<br/><i>:80 from the ALB · :22 from the owner</i>"]
-    end
+  %% ============= EDGE BEHAVIOURS =============
+  CF --> APIB[⚙️ /api/*<br/>CachingDisabled + All Viewer Headers]
+  CF --> ASTB[📦 /assets/*<br/>Immutable 1 Year + Content-Hashed]
+  CF --> APPB[📄 /* Default<br/>No-Cache on index.html + SPA Fallback]
 
-    subgraph HOST ["🐳 Containers on the instance"]
-        direction LR
-        WEB["nginx<br/><i>serves the build, proxies /api</i>"]
-        API["⚡ FastAPI + Uvicorn<br/><i>internal only, never published</i>"]
-    end
+  %% ============= NETWORK LOCKDOWN =============
+  APIB --> ALB[⚖️ Application Load Balancer<br/>2 Availability Zones + Origin-Facing Prefix List]
+  ASTB --> ALB
+  APPB --> ALB
+  ALB --> EC2[🖥️ EC2 t4g.small · Graviton<br/>:80 From ALB Only + :22 From Owner + IMDSv2]
 
-    subgraph DATA ["💾 Persistence"]
-        direction LR
-        DB[("🐘 PostgreSQL 16<br/>dedicated EBS volume<br/><i>survives instance replacement</i>")]
-        S3[("🪣 S3<br/>Block Public Access ON<br/><i>originals + WebP derivatives</i>")]
-        BAK[("🗄️ Nightly pg_dump<br/><i>14-day retention</i>")]
-    end
+  %% ============= CONTAINERS =============
+  EC2 --> WEB[🔀 nginx<br/>Serves Build + Proxies /api]
+  WEB --> API[⚡ FastAPI + Uvicorn<br/>Internal Only + Never Published]
 
-    V ==> EDGE
-    API_B & AST_B & APP_B --> ALB
-    ALB ==> EC2 ==> WEB ==> API
-    API --> DB
-    API -->|"IAM instance role<br/>no keys on the box"| S3
-    DB -.->|"03:00 UTC"| BAK
-    V -. "presigned GET · 1 h TTL" .-> S3
+  %% ============= PERSISTENCE =============
+  API --> DB[(🐘 PostgreSQL 16<br/>Dedicated EBS Volume + Survives Replacement)]
+  API --> IAM[🔑 IAM Instance Role<br/>Scoped to One Bucket + No Keys on Disk]
+  IAM --> S3[(🪣 S3 Bucket<br/>Block Public Access + AES256 Encryption)]
 
-    classDef edge fill:#2b2c34,stroke:#d99a4e,stroke-width:1px,color:#f4f1ea
-    classDef net fill:#2b2c34,stroke:#cd957c,stroke-width:1px,color:#f4f1ea
-    classDef host fill:#2b2c34,stroke:#7aaba8,stroke-width:1px,color:#f4f1ea
-    classDef data fill:#17181d,stroke:#7aaba8,stroke-width:1px,color:#f4f1ea
-    classDef visitor fill:#f4f1ea,stroke:#f4f1ea,color:#22232a
-
-    class API_B,AST_B,APP_B edge
-    class ALB,EC2 net
-    class WEB,API host
-    class DB,S3,BAK data
-    class V visitor
+  %% ============= BACKUP & DELIVERY =============
+  DB --> BAK[(🗄️ Nightly pg_dump<br/>03:00 UTC + 14-Day Retention)]
+  BAK --> S3
+  U -.->|Presigned GET · 1 h TTL| S3
 ```
 
 ---
