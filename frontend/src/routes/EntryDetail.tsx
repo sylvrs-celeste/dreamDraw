@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 
 import Lightbox from "../components/Lightbox";
 import TagChip from "../components/TagChip";
-import { api } from "../api/client";
+import { api, ApiError } from "../api/client";
 import { rotationFor } from "../theme/rotation";
 import type { CSSProperties } from "react";
 
@@ -32,13 +32,34 @@ export default function EntryDetail() {
   }
 
   if (entry.isError || !entry.data) {
+    // A 404 means the address is wrong. Anything else means the server is
+    // unwell, and saying "no entry with that address" would be a lie that
+    // sends you looking for a problem you do not have.
+    const missing = entry.error instanceof ApiError && entry.error.status === 404;
     return (
       <section className="flex min-h-[60dvh] flex-col items-center justify-center text-center">
-        <h1 className="font-hand text-4xl text-stock">Not found</h1>
-        <p className="mt-3 text-stock/60">No entry with that address.</p>
-        <Link to="/gallery" className="mt-8 text-sm underline underline-offset-4">
-          Back to the wall
-        </Link>
+        <h1 className="font-hand text-4xl text-stock">
+          {missing ? "Not found" : "Could not load that entry"}
+        </h1>
+        <p className="mt-3 text-stock/60">
+          {missing
+            ? "No entry with that address."
+            : `The server did not answer. ${(entry.error as Error)?.message ?? ""}`}
+        </p>
+        <div className="mt-8 flex items-center gap-5 text-sm">
+          {!missing && (
+            <button
+              type="button"
+              onClick={() => entry.refetch()}
+              className="underline underline-offset-4"
+            >
+              Try again
+            </button>
+          )}
+          <Link to="/gallery" className="underline underline-offset-4">
+            Back to Gallery
+          </Link>
+        </div>
       </section>
     );
   }

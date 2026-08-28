@@ -88,7 +88,23 @@ export default function Timeline() {
 
       {entries.isPending && <p className="text-stock/60">Loading…</p>}
 
-      {!entries.isPending && years.length === 0 && (
+      {/* An outage must never render as an empty timeline. Telling someone
+          their work is gone when the server is merely down is the worst
+          possible way to be wrong. */}
+      {entries.isError && (
+        <p role="alert" className="py-16 text-center text-accent-rust">
+          Could not load the timeline. {(entries.error as Error).message}
+          <button
+            type="button"
+            onClick={() => entries.refetch()}
+            className="ml-3 underline underline-offset-4"
+          >
+            Try again
+          </button>
+        </p>
+      )}
+
+      {!entries.isPending && !entries.isError && years.length === 0 && (
         <p className="py-16 text-center text-stock/60">Nothing on the timeline yet.</p>
       )}
 
