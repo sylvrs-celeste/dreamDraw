@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 
 import { rotationFor } from "../theme/rotation";
+import { buildSrcSet, GALLERY_SIZES } from "../theme/srcset";
 import type { EntrySummary } from "../api/types";
 
 /** Room for the rotated corners to swing into.
@@ -41,6 +42,12 @@ export default function Polaroid({ entry }: { entry: EntrySummary }) {
         {cover ? (
           <img
             src={cover.url_thumb}
+            /* The thumb caps the LONG edge at 400px, so a portrait photo is
+               only 225px wide -- roughly a quarter of what a card needs on a
+               retina screen. Offer both derivatives and let the browser pick;
+               small screens still get the 2 KB thumb. */
+            srcSet={buildSrcSet(cover)}
+            sizes={GALLERY_SIZES}
             alt={cover.alt_text ?? ""}
             width={cover.width}
             height={cover.height}

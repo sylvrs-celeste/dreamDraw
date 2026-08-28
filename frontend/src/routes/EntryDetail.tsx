@@ -6,6 +6,7 @@ import Lightbox from "../components/Lightbox";
 import TagChip from "../components/TagChip";
 import { api, ApiError } from "../api/client";
 import { rotationFor } from "../theme/rotation";
+import { buildSrcSet } from "../theme/srcset";
 import type { CSSProperties } from "react";
 
 function formatArtDate(iso: string): string {
@@ -111,6 +112,8 @@ export default function EntryDetail() {
                 /* medium, not thumb: these plates render around 560px wide and
                    the 400px thumb visibly upscales. Thumb is for the wall. */
                 src={img.url_medium}
+                srcSet={buildSrcSet(img)}
+                sizes="(min-width: 640px) 47vw, 92vw"
                 alt={img.alt_text ?? ""}
                 width={img.width}
                 height={img.height}
